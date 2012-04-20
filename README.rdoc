@@ -1,5 +1,6 @@
 Sample integration of Compass, Sprockets, and Mustache.
 
 Steps:
-1. bundle install
-2. rake
+  $ git clone git://github.com/scotdalton/sample-compass-sprockets-mustache-rake.git
+  $ bundle install
+  $ rake
