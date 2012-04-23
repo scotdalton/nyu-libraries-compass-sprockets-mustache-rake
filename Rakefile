@@ -8,7 +8,7 @@ require 'yui/compressor'
 ROOT = File.dirname(__FILE__)
 BUILD_PATH = File.join(ROOT, 'dist')
 SPROCKET_ASSETS = [:javascripts, :css]
-MUSTACHES = {:templates => ["Sample"]}
+MUSTACHES = YAML.load_file('mustaches.yml')
 
 desc "Cleanup assets"
 task :cleanup do
@@ -67,11 +67,11 @@ task :mustache do
   MUSTACHES.each do |dir, mustaches|
     mustaches.each do |mustache|
       mustache_file = mustache.downcase
-      require File.join(ROOT, dir.to_s, mustache_file)
+      require File.join(ROOT, dir, mustache_file)
       mustache = Kernel.const_get(mustache).new
-      mustache.template_path= File.join(ROOT, dir.to_s)
+      mustache.template_path= File.join(ROOT, dir)
       mustache.template_extension= "html.mustache"
-      build_file = File.join(BUILD_PATH, dir.to_s, "#{mustache_file}.html")
+      build_file = File.join(BUILD_PATH, dir, "#{mustache_file}.html")
       File.open(build_file, 'w') do |f|
         f.write(mustache.render)
       end
