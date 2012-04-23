@@ -8,7 +8,7 @@ require 'yui/compressor'
 ROOT = File.dirname(__FILE__)
 BUILD_PATH = File.join(ROOT, 'dist')
 SPROCKET_ASSETS = [:javascripts, :css]
-MUSTACHES = YAML.load_file('mustaches.yml')
+MUSTACHES_CONFIG = 'mustaches.yml'
 COMPASS_CONFIG = "#{ROOT}/compass.rb"
 
 desc "Cleanup assets"
@@ -19,7 +19,7 @@ task :cleanup do
   (SPROCKET_ASSETS).each do |asset|
     FileUtils.mkdir_p File.join(BUILD_PATH, asset.to_s)
   end
-  MUSTACHES.each_key do |dir|
+  YAML.load_file(MUSTACHES_CONFIG).each_key do |dir|
     FileUtils.mkdir_p File.join(BUILD_PATH, dir.to_s)
   end
 end
@@ -65,7 +65,8 @@ end
 
 desc "Make mustaches"
 task :mustache do
-  MUSTACHES.each do |dir, mustaches|
+  mustaches_config = YAML.load_file(MUSTACHES_CONFIG)
+  mustaches_config.each do |dir, mustaches|
     mustaches.each do |mustache|
       mustache_file = mustache.downcase
       require File.join(ROOT, dir, mustache_file)
