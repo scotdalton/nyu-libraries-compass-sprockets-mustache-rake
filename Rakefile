@@ -7,7 +7,7 @@ require 'yui/compressor'
 require 'rake'
 
 ROOT = File.dirname(__FILE__)
-BUILD_PATH = File.join(ROOT, 'dist')
+BUILD_PATH = ""
 SPROCKET_ASSETS = [:javascripts, :stylesheets]
 MUSTACHES_CONFIG = 'mustaches.yml'
 
@@ -16,6 +16,7 @@ namespace :nyu_assets do
   task :compile, :project_root, :mustaches_config do |task, args|
     args.with_defaults(:project_root => ROOT)
     args.with_defaults(:mustaches_config => MUSTACHES_CONFIG)
+    BUILD_PATH = File.join(args[:project_root], 'dist')
     Rake::Task['nyu_assets:cleanup'].invoke(args[:project_root], args[:mustaches_config])
     Rake::Task['nyu_assets:compass'].invoke(args[:project_root])
     Rake::Task['nyu_assets:sprockets'].invoke(args[:project_root])
