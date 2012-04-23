@@ -3,4 +3,4 @@ Sample integration of Compass, Sprockets, and Mustache.
 Steps:
   $ git clone git://github.com/scotdalton/sample-compass-sprockets-mustache-rake.git
   $ bundle install
-  $ rake
+  $ rake nyu_assets:compile
