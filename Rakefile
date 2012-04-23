@@ -12,7 +12,7 @@ SPROCKET_ASSETS = [:javascripts, :stylesheets]
 MUSTACHES_CONFIG = 'mustaches.yml'
 
 namespace :nyu_assets do
-  desc "Compile assets, usage rake nyu_assets:compile['/project/root'[, '/project/root/mustaches.yml']]"
+  desc "Compile assets, usage rake nyu_assets:compile['/project/root'[, 'mustaches.yml']]"
   task :compile, :project_root, :mustaches_config do |task, args|
     args.with_defaults(:project_root => ROOT)
     args.with_defaults(:mustaches_config => MUSTACHES_CONFIG)
