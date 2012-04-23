@@ -1,4 +1,4 @@
-Sample integration of Compass, Sprockets, and Mustache.
+Tool for integrating Compass, Sprockets, and Mustache into NYU Libraries projects.
 
 Steps:
   $ git clone git://github.com/scotdalton/sample-compass-sprockets-mustache-rake.git

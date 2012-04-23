@@ -8,17 +8,18 @@ require 'rake'
 
 ROOT = File.dirname(__FILE__)
 SPROCKET_ASSETS = [:javascripts, :stylesheets]
+MUSTACHES_CONFIG = "mustaches.yml"
 
 namespace :nyu_libraries_assets do
   desc "Compile assets, usage rake nyu_assets:compile['/project/root'[, 'mustaches.yml']]"
   task :compile, :project_root, :mustaches_config do |task, args|
     args.with_defaults(:project_root => ROOT)
-    args.with_defaults(:mustaches_config => "")
+    args.with_defaults(:mustaches_config => MUSTACHES_CONFIG)
     build_path = File.join(args[:project_root], 'dist')
-    Rake::Task['nyu_assets:cleanup'].invoke(args[:project_root], args[:mustaches_config], build_path)
-    Rake::Task['nyu_assets:compass'].invoke(args[:project_root])
-    Rake::Task['nyu_assets:sprockets'].invoke(args[:project_root], build_path)
-    Rake::Task['nyu_assets:mustache'].invoke(args[:project_root], args[:mustaches_config], build_path)
+    Rake::Task['nyu_libraries_assets:cleanup'].invoke(args[:project_root], args[:mustaches_config], build_path)
+    Rake::Task['nyu_libraries_assets:compass'].invoke(args[:project_root])
+    Rake::Task['nyu_libraries_assets:sprockets'].invoke(args[:project_root], build_path)
+    Rake::Task['nyu_libraries_assets:mustache'].invoke(args[:project_root], args[:mustaches_config], build_path)
   end
 
   desc "Cleanup assets"
@@ -29,8 +30,9 @@ namespace :nyu_libraries_assets do
     (SPROCKET_ASSETS).each do |asset|
       FileUtils.mkdir_p File.join(args[:build_path], asset.to_s)
     end
-    if File.exists?(args[:mustaches_config])
-      mustaches_config = YAML.load_file(args[:mustaches_config])
+    mustaches_config_file = "#{args[:project_root]}/#{args[:mustaches_config]}"
+    if File.exists?(mustaches_config_file)
+      mustaches_config = YAML.load_file(mustaches_config_file)
       if mustaches_config
         mustaches_config.each_key do |dir|
           FileUtils.mkdir_p File.join(args[:build_path], dir.to_s)
@@ -78,8 +80,9 @@ namespace :nyu_libraries_assets do
 
   desc "Make mustaches"
   task :mustache, :project_root, :mustaches_config, :build_path do |task, args|
-    if File.exists?(args[:mustaches_config])
-      mustaches_config = YAML.load_file(args[:mustaches_config])
+    mustaches_config_file = "#{args[:project_root]}/#{args[:mustaches_config]}"
+    if File.exists?(mustaches_config_file)
+      mustaches_config = YAML.load_file(mustaches_config_file)
       if mustaches_config
         mustaches_config.each do |dir, mustaches|
           mustaches.each do |mustache|
