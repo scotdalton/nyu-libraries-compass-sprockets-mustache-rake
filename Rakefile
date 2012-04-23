@@ -98,4 +98,3 @@ namespace :nyu_assets do
     end
   end
 end
-# task :default => :compile
