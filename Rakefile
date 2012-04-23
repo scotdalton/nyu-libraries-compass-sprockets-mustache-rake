@@ -4,6 +4,7 @@ require 'sprockets'
 require 'fileutils'
 require 'uglifier'
 require 'yui/compressor'
+require 'rake'
 
 ROOT = File.dirname(__FILE__)
 BUILD_PATH = File.join(ROOT, 'dist')
@@ -11,36 +12,44 @@ SPROCKET_ASSETS = [:javascripts, :css]
 MUSTACHES_CONFIG = 'mustaches.yml'
 COMPASS_CONFIG = "#{ROOT}/compass.rb"
 
+desc "Compile assets. "
+task :compile, :project_root, :mustaches_config do |task, args|
+  args.with_defaults(:project_root => ROOT)
+  args.with_defaults(:compass_config => COMPASS_CONFIG)
+  args.with_defaults(:mustaches_config => MUSTACHES_CONFIG)
+  Rake::Task[:cleanup].invoke(args[:project_root], args[:mustaches_config])
+  Rake::Task[:compass].invoke(args[:project_root])
+  Rake::Task[:sprockets].invoke(args[:project_root])
+  Rake::Task[:mustache].invoke(args[:project_root], args[:mustaches_config])
+end
+
 desc "Cleanup assets"
-task :cleanup do
+task :cleanup, :project_root, :mustaches_config do |task, args|
   FileUtils.rm_r BUILD_PATH if File.exists?(BUILD_PATH)
-  Compass::Exec::SubCommandUI.new(["clean", ROOT]).run!
+  Compass::Exec::SubCommandUI.new(["clean", args[:project_root]]).run!
   # Don't initialize Compass assets, the config will take care of it
   (SPROCKET_ASSETS).each do |asset|
     FileUtils.mkdir_p File.join(BUILD_PATH, asset.to_s)
   end
-  YAML.load_file(MUSTACHES_CONFIG).each_key do |dir|
+  YAML.load_file(args[:mustaches_config]).each_key do |dir|
     FileUtils.mkdir_p File.join(BUILD_PATH, dir.to_s)
   end
 end
 
-desc "Compile assets"
-task :compile => [:cleanup, :compass, :sprockets, :mustache]
-
 desc "Compile compass"
-task :compass do
+task :compass, :project_root do |task, args|
   # First do the compass stuff
-  Compass::Exec::SubCommandUI.new(["compile", ROOT, "-s", "compact", "-c", COMPASS_CONFIG]).run!
+  Compass::Exec::SubCommandUI.new(["compile", args[:project_root], "-s", "compact"]).run!
 end
 
 desc "Compile sprockets"
-task :sprockets do
+task :sprockets, :project_root do |task, args|
   # Initialize sprockets environment
-  sprockets = Sprockets::Environment.new(ROOT) do |env|
+  sprockets = Sprockets::Environment.new(args[:project_root]) do |env|
     env.logger = Logger.new(STDOUT)
   end
   SPROCKET_ASSETS.each do |asset_type|
-    load_path = File.join(ROOT, asset_type.to_s)
+    load_path = File.join(args[:project_root], asset_type.to_s)
     sprockets.append_path load_path
     Dir.new(load_path).each do |filename|
       file = File.join(load_path, filename)
@@ -64,14 +73,14 @@ task :sprockets do
 end
 
 desc "Make mustaches"
-task :mustache do
-  mustaches_config = YAML.load_file(MUSTACHES_CONFIG)
+task :mustache, :project_root, :mustaches_config do |task, args|
+  mustaches_config = YAML.load_file(args[:mustaches_config])
   mustaches_config.each do |dir, mustaches|
     mustaches.each do |mustache|
       mustache_file = mustache.downcase
-      require File.join(ROOT, dir, mustache_file)
+      require File.join(args[:project_root], dir, mustache_file)
       mustache = Kernel.const_get(mustache).new
-      mustache.template_path= File.join(ROOT, dir)
+      mustache.template_path= File.join(args[:project_root], dir)
       mustache.template_extension= "html.mustache"
       build_file = File.join(BUILD_PATH, dir, "#{mustache_file}.html")
       File.open(build_file, 'w') do |f|
