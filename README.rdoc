@@ -1,7 +1,7 @@
 Tool for integrating Compass, Sprockets, and Mustache into NYU Libraries projects.
 
 Steps:
-  $ git clone git://github.com/scotdalton/sample-compass-sprockets-mustache-rake.git
+  $ git clone git://github.com/scotdalton/nyu-libraries-compass-sprockets-mustache-rake.git
   $ bundle install
   $ rake nyu_libraries_assets:compile
   
