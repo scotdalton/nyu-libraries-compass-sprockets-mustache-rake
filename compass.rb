@@ -1,9 +1,10 @@
 # Require any additional compass plugins here.
+ROOT = File.dirname(__FILE__)
 
-css_dir = "css"
-sass_dir = "sass"
-images_dir = "images"
-javascripts_dir = "javascripts"
+css_dir = "#{ROOT}/css"
+sass_dir = "#{ROOT}/sass"
+images_dir = "#{ROOT}/images"
+javascripts_dir = "#{ROOT}/javascripts"
 
 # You can select your preferred output style here (can be overridden via the command line):
 # output_style = :expanded or :nested or :compact or :compressed

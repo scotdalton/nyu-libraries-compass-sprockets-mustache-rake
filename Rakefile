@@ -9,6 +9,7 @@ ROOT = File.dirname(__FILE__)
 BUILD_PATH = File.join(ROOT, 'dist')
 SPROCKET_ASSETS = [:javascripts, :css]
 MUSTACHES = YAML.load_file('mustaches.yml')
+COMPASS_CONFIG = "#{ROOT}/compass.rb"
 
 desc "Cleanup assets"
 task :cleanup do
@@ -29,7 +30,7 @@ task :compile => [:cleanup, :compass, :sprockets, :mustache]
 desc "Compile compass"
 task :compass do
   # First do the compass stuff
-  Compass::Exec::SubCommandUI.new(["compile", ROOT, "-s", "compact"]).run!
+  Compass::Exec::SubCommandUI.new(["compile", ROOT, "-s", "compact", "-c", COMPASS_CONFIG]).run!
 end
 
 desc "Compile sprockets"
