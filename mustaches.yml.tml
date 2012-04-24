@@ -1,3 +1,5 @@
 ---
 templates:
-  - Sample
+  - Sample:
+    - Sample1
+    - Sample2

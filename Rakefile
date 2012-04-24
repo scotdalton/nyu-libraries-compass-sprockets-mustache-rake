@@ -8,18 +8,18 @@ require 'rake'
 
 ROOT = File.dirname(__FILE__)
 SPROCKET_ASSETS = [:javascripts, :stylesheets]
-MUSTACHES_CONFIG = "mustaches.yml"
+MUSTACHES_CONFIG = "mustaches.yml.tml"
 
 namespace :nyu_libraries_assets do
-  desc "Compile assets, usage rake nyu_assets:compile['/project/root'[, 'mustaches.yml']]"
-  task :compile, :project_root, :mustaches_config do |task, args|
+  desc "Compile assets, usage rake nyu_assets:compile['/project/root'[, 'mustaches.yml'[, true|false]]]"
+  task :compile, :project_root, :mustaches_config, :downcase do |task, args|
     args.with_defaults(:project_root => ROOT)
     args.with_defaults(:mustaches_config => MUSTACHES_CONFIG)
     build_path = File.join(args[:project_root], 'dist')
     Rake::Task['nyu_libraries_assets:cleanup'].invoke(args[:project_root], args[:mustaches_config], build_path)
     Rake::Task['nyu_libraries_assets:compass'].invoke(args[:project_root])
     Rake::Task['nyu_libraries_assets:sprockets'].invoke(args[:project_root], build_path)
-    Rake::Task['nyu_libraries_assets:mustache'].invoke(args[:project_root], args[:mustaches_config], build_path)
+    Rake::Task['nyu_libraries_assets:mustache'].invoke(args[:project_root], args[:mustaches_config], build_path, args[:downcase])
   end
 
   desc "Cleanup assets"
@@ -79,21 +79,37 @@ namespace :nyu_libraries_assets do
   end
 
   desc "Make mustaches"
-  task :mustache, :project_root, :mustaches_config, :build_path do |task, args|
+  task :mustache, :project_root, :mustaches_config, :build_path, :downcase do |task, args|
+    args.with_defaults(:downcase => true)
     mustaches_config_file = "#{args[:project_root]}/#{args[:mustaches_config]}"
     if File.exists?(mustaches_config_file)
       mustaches_config = YAML.load_file(mustaches_config_file)
       if mustaches_config
         mustaches_config.each do |dir, mustaches|
           mustaches.each do |mustache|
-            mustache_file = mustache.downcase
-            require File.join(args[:project_root], dir, mustache_file)
-            mustache = Kernel.const_get(mustache).new
-            mustache.template_path= File.join(args[:project_root], dir)
-            mustache.template_extension= "html.mustache"
-            build_file = File.join(args[:build_path], dir, "#{mustache_file}.html")
-            File.open(build_file, 'w') do |f|
-              f.write(mustache.render)
+            template = (mustache.is_a? Hash) ? mustache.keys.first : mustache
+            template_file = template.gsub(/(.)([A-Z])/,'\1_\2').downcase
+            if mustache[template].is_a? Array
+              mustache[template].each do |logic_file|
+                logic_class = logic_file
+                logic_file = logic_file.gsub(/(.)([A-Z])/,'\1_\2').downcase
+                logic_output_file = (args[:downcase].eql? true) ? logic_file.gsub(/(.)([A-Z])/,'\1_\2').downcase : logic_class
+                require File.join(args[:project_root], dir, logic_file)
+                mustache = Kernel.const_get(logic_class).new
+                mustache.template_file= File.join(args[:project_root], dir, template_file) + ".html.mustache"
+                build_file = File.join(args[:build_path], dir, "#{logic_output_file}.html")
+                File.open(build_file, 'w') do |f|
+                  f.write(mustache.render)
+                end
+              end
+            else
+              require File.join(args[:project_root], dir, template_file)
+              mustache = Kernel.const_get(template).new
+              mustache.template_file= File.join(args[:project_root], dir, template_file) + ".html.mustache"
+              build_file = File.join(args[:build_path], dir, "#{template_file}.html")
+              File.open(build_file, 'w') do |f|
+                f.write(mustache.render)
+              end
             end
           end
         end
